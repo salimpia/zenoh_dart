@@ -1,0 +1,9 @@
+.dart_tool/
+.packages
+.pub-cache/
+build/
+.dart_fvm/
+.idea/
+.vscode/
+.DS_Store
+*.iml

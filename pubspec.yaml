@@ -1,0 +1,44 @@
+name: zenoh_dart
+version: 0.1.0-dev.0
+description: Dart and Flutter FFI bindings for the Eclipse Zenoh middleware.
+publish_to: https://pub.dev
+homepage: https://github.com/M-PIA/zenoh_dart
+repository: https://github.com/M-PIA/zenoh_dart
+issue_tracker: https://github.com/M-PIA/zenoh_dart/issues
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.24.0"
+
+dependencies:
+  ffi: ^2.1.0
+  meta: ^1.11.0
+  plugin_platform_interface: ^2.1.6
+  flutter:
+    sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
+
+dev_dependencies:
+  ffigen: ^11.0.0
+  flutter_lints: ^4.0.0
+  crypto: ^3.0.3
+  test: ^1.25.4
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        ffiPlugin: true
+      ios:
+        ffiPlugin: true
+      macos:
+        ffiPlugin: true
+      windows:
+        ffiPlugin: true
+      linux:
+        ffiPlugin: true
+      web:
+        pluginClass: ZenohDartPlugin
+        fileName: zenoh_dart_web.dart
+        dartPluginClass: ZenohDartPlugin

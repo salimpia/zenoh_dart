@@ -1,0 +1,72 @@
+[
+  {
+    "platform": "android-arm64",
+    "url": "TODO",
+    "output": "native/android/arm64-v8a/libzenoh.so",
+    "sha256": "",
+    "notes": "Official Android binaries are not published yet."
+  },
+  {
+    "platform": "android-armv7",
+    "url": "TODO",
+    "output": "native/android/armeabi-v7a/libzenoh.so",
+    "sha256": "",
+    "notes": "Official Android binaries are not published yet."
+  },
+  {
+    "platform": "android-x86_64",
+    "url": "TODO",
+    "output": "native/android/x86_64/libzenoh.so",
+    "sha256": "",
+    "notes": "Official Android binaries are not published yet."
+  },
+  {
+    "platform": "ios",
+    "url": "TODO",
+    "output": "native/ios/Frameworks/zenoh.xcframework.zip",
+    "sha256": "",
+    "notes": "Build from source until an XCFramework is available."
+  },
+  {
+    "platform": "macos-aarch64",
+    "url": "https://github.com/eclipse-zenoh/zenoh-c/releases/download/1.6.2/zenoh-c-1.6.2-aarch64-apple-darwin-standalone.zip",
+    "output": "native/macos/aarch64/zenoh-c-1.6.2-aarch64-apple-darwin-standalone.zip",
+    "sha256": "77eccf0b0ab65fe2e26926ed14a79009eef6317623440849132859cd8d8173dd"
+  },
+  {
+    "platform": "macos-x64",
+    "url": "https://github.com/eclipse-zenoh/zenoh-c/releases/download/1.6.2/zenoh-c-1.6.2-x86_64-apple-darwin-standalone.zip",
+    "output": "native/macos/x86_64/zenoh-c-1.6.2-x86_64-apple-darwin-standalone.zip",
+    "sha256": "a3a6a1b990e01a793268d08b5dedc125c04482894f5195e7cb0cb10fe87f4e14"
+  },
+  {
+    "platform": "linux-x64",
+    "url": "https://github.com/eclipse-zenoh/zenoh-c/releases/download/1.6.2/zenoh-c-1.6.2-x86_64-unknown-linux-gnu-standalone.zip",
+    "output": "native/linux/x86_64/zenoh-c-1.6.2-x86_64-unknown-linux-gnu-standalone.zip",
+    "sha256": "ed80fc800b49c1bb69d7a463d3623f886d6bead029a3bbdc0fb6fbc7f59fb31c"
+  },
+  {
+    "platform": "linux-aarch64",
+    "url": "https://github.com/eclipse-zenoh/zenoh-c/releases/download/1.6.2/zenoh-c-1.6.2-aarch64-unknown-linux-gnu-standalone.zip",
+    "output": "native/linux/aarch64/zenoh-c-1.6.2-aarch64-unknown-linux-gnu-standalone.zip",
+    "sha256": "98deadee8048435955b8944d3aca434db2199441d4d073fae63b2d1534a9d72f"
+  },
+  {
+    "platform": "linux-armv7",
+    "url": "https://github.com/eclipse-zenoh/zenoh-c/releases/download/1.6.2/zenoh-c-1.6.2-armv7-unknown-linux-gnueabihf-standalone.zip",
+    "output": "native/linux/armv7/zenoh-c-1.6.2-armv7-unknown-linux-gnueabihf-standalone.zip",
+    "sha256": "c6f009d551449ec556607cc333267aa580b7b670226181419b55031868d03277"
+  },
+  {
+    "platform": "windows-x64-msvc",
+    "url": "https://github.com/eclipse-zenoh/zenoh-c/releases/download/1.6.2/zenoh-c-1.6.2-x86_64-pc-windows-msvc-standalone.zip",
+    "output": "native/windows/x64/zenoh-c-1.6.2-x86_64-pc-windows-msvc-standalone.zip",
+    "sha256": "99345341613e2f7d866d6b17bdf6cae820bccb15f0f3cf212e5caa2143418901"
+  },
+  {
+    "platform": "windows-x64-gnu",
+    "url": "https://github.com/eclipse-zenoh/zenoh-c/releases/download/1.6.2/zenoh-c-1.6.2-x86_64-pc-windows-gnu-standalone.zip",
+    "output": "native/windows/x64/zenoh-c-1.6.2-x86_64-pc-windows-gnu-standalone.zip",
+    "sha256": "a87e06be1931975bbff86a14bd1e9ba3347a29412594603e6594b1e6b449e8ef"
+  }
+]
