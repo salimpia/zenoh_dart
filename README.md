@@ -41,17 +41,24 @@ Dart and Flutter FFI bindings for [Eclipse Zenoh](https://zenoh.io), prepared by
 
 ## Native binaries
 
-The `native/` directory will contain per-platform Zenoh distributions. A future `tool/fetch_zenoh_binaries.dart` script will download official builds and verify checksums during CI.
+The `native/` directory contains per-platform Zenoh distributions. **Native binary archives (`.zip` files) are not included in the package to keep the download size reasonable.**
 
-Run the helper to populate binaries (Android/iOS entries remain TODO until official artifacts are available):
+### Download binaries
+
+Run the helper script to download and extract official Zenoh C binaries:
 
 ```bash
 dart run tool/fetch_zenoh_binaries.dart
 ```
 
-Zipped artifacts are stored under `native/<platform>/`; unzip them locally and keep the shared library in the same directory so Flutter's asset bundling can locate it.
+This script downloads platform-specific archives from the [Zenoh C releases](https://github.com/eclipse-zenoh/zenoh-c/releases) and verifies SHA-256 checksums. Extract the downloaded archives to keep the shared library (`.dll`, `.so`, `.dylib`) in the correct `native/<platform>/<arch>/` directory.
 
-If you need to build the binaries yourself, see `docs/platform_support.md` along with the scripts in `tool/` (e.g., `build_android_zenoh.sh`, `build_ios_zenoh.sh`).
+### Platform support
+
+- ✅ **Windows** (x64 MSVC/GNU)
+- ✅ **macOS** (x64, arm64)
+- ✅ **Linux** (x64, arm64, armv7)
+- ⚠️ **Android/iOS**: Native binaries are not yet officially published. See `doc/platform_support.md` and build scripts in `tool/` for instructions on building from source.
 
 ## Generating bindings
 
@@ -62,6 +69,10 @@ dart run ffigen
 ```
 
 The command writes expanded bindings into `lib/src/bindings/zenoh_generated.dart`, which you can then wrap with higher-level Dart helpers.
+
+## Platform support
+
+See `doc/platform_support.md` for detailed build requirements and instructions.
 
 ## Licensing
 

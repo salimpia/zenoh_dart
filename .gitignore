@@ -7,3 +7,10 @@ build/
 .vscode/
 .DS_Store
 *.iml
+
+# Large native binary archives (download via tool/fetch_zenoh_binaries.dart)
+native/**/*.zip
+
+# Test artifacts
+test_cache/
+unit_test_assets/
