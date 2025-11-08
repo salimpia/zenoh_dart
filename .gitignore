@@ -11,6 +11,15 @@ build/
 # Large native binary archives (download via tool/fetch_zenoh_binaries.dart)
 native/**/*.zip
 
+# Build artifacts not needed for runtime
+native/**/*.a
+native/**/*.lib
+native/**/zenohd
+native/**/zenohd.exe
+native/**/*plugin*.so
+native/**/*plugin*.dll
+native/**/*plugin*.dylib
+
 # Test artifacts
 test_cache/
 unit_test_assets/
