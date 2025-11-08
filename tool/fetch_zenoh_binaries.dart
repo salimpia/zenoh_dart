@@ -43,7 +43,8 @@ Future<void> main(List<String> arguments) async {
       if (sha256 != null && sha256.isNotEmpty) {
         final digest = sha256Convert(bytes);
         if (digest != sha256) {
-          throw StateError('Checksum mismatch: expected $sha256 but got $digest');
+          throw StateError(
+              'Checksum mismatch: expected $sha256 but got $digest');
         }
       }
 
@@ -61,7 +62,8 @@ Future<List<int>> _downloadBytes(String url) async {
     final request = await client.getUrl(Uri.parse(url));
     final response = await request.close();
     if (response.statusCode != 200) {
-      throw HttpException('Unexpected status ${response.statusCode}', uri: Uri.parse(url));
+      throw HttpException('Unexpected status ${response.statusCode}',
+          uri: Uri.parse(url));
     }
     final bytes = await response.fold<List<int>>(<int>[], (buffer, chunk) {
       buffer.addAll(chunk);

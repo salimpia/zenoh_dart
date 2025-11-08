@@ -45,8 +45,8 @@ class NativeLibrary {
     final executableDir = _resolveExecutableDirectory();
     if (executableDir != null) {
       if (Platform.isMacOS || Platform.isIOS) {
-        candidates.add(Directory.fromUri(
-            executableDir.uri.resolve('../Frameworks/')));
+        candidates.add(
+            Directory.fromUri(executableDir.uri.resolve('../Frameworks/')));
       }
       if (Platform.isWindows) {
         candidates.add(Directory.fromUri(executableDir.uri
@@ -67,7 +67,8 @@ class NativeLibrary {
       candidates.addAll(_nativeAssetDirectories(packageRoot));
       if (platformDir != null && arch != null) {
         candidates.add(
-          Directory('${packageRoot.path}/build/native_assets/$platformDir/$arch'),
+          Directory(
+              '${packageRoot.path}/build/native_assets/$platformDir/$arch'),
         );
       }
     }
@@ -230,6 +231,7 @@ class NativeLibrary {
     if (Platform.isAndroid || Platform.isLinux) {
       return 'libzenoh.so';
     }
-    throw UnsupportedError('Zenoh native bindings are not supported on this platform yet.');
+    throw UnsupportedError(
+        'Zenoh native bindings are not supported on this platform yet.');
   }
 }
