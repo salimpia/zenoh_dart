@@ -20,6 +20,9 @@ native/**/*plugin*.so
 native/**/*plugin*.dll
 native/**/*plugin*.dylib
 
+# Windows GNU toolchain (users can download if needed)
+native/windows/**/gnu/
+
 # Test artifacts
 test_cache/
 unit_test_assets/

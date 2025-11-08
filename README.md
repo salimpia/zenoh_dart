@@ -55,10 +55,12 @@ This script downloads platform-specific archives from the [Zenoh C releases](htt
 
 ### Platform support
 
-- ✅ **Windows** (x64 MSVC/GNU)
+- ✅ **Windows** (x64 MSVC)
 - ✅ **macOS** (x64, arm64)
 - ✅ **Linux** (x64, arm64, armv7)
 - ⚠️ **Android/iOS**: Native binaries are not yet officially published. See `doc/platform_support.md` and build scripts in `tool/` for instructions on building from source.
+
+**Note**: Windows GNU toolchain binaries are not included in the package to reduce size. Use the MSVC binaries (default on Windows) or download the GNU version via `dart run tool/fetch_zenoh_binaries.dart` if needed.
 
 ## Generating bindings
 
