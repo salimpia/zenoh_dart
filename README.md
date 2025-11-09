@@ -1,6 +1,6 @@
 # zenoh_dart
 
-Dart and Flutter FFI bindings for [Eclipse Zenoh](https://zenoh.io), prepared by M-PIA. This package exposes Zenoh's core APIs to Flutter apps across Android, iOS, macOS, Windows, and Linux. Web support will follow once WebAssembly bindings are production ready.
+Dart and Flutter FFI bindings for [Eclipse Zenoh](https://zenoh.io), prepared by M-PIA. This package exposes Zenoh's core APIs to Flutter apps across Android, iOS, macOS, Windows, Linux, and Web (experimental).
 
 ## Project goals
 
@@ -59,6 +59,7 @@ This script downloads platform-specific archives from the [Zenoh C releases](htt
 - ✅ **macOS** (x64, arm64)
 - ✅ **Linux** (x64, arm64, armv7)
 - ⚠️ **Android/iOS**: Native binaries are not yet officially published. See `doc/platform_support.md` and build scripts in `tool/` for instructions on building from source.
+- 🚧 **Web**: Experimental support with platform-agnostic architecture. Full implementation pending zenoh-ts integration. See `doc/platform_support.md` for details.
 
 **Note**: Windows GNU toolchain binaries are not included in the package to reduce size. Use the MSVC binaries (default on Windows) or download the GNU version via `dart run tool/fetch_zenoh_binaries.dart` if needed.
 

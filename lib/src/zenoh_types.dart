@@ -57,20 +57,25 @@ class ZenohSubscriber {
     this.pointer, {
     required this.stream,
     required this.contextId,
+    this.webHandle,
   });
 
-  final ffi.Pointer<gen.z_owned_subscriber_t> pointer;
+  final ffi.Pointer<gen.z_owned_subscriber_t>? pointer;
   final Stream<ZenohSample> stream;
   final int contextId;
+  // Using dynamic for web JSObject to avoid conditional imports
+  final dynamic webHandle;
 
-  int get handle => pointer.address;
+  int get handle => pointer?.address ?? 0;
 }
 
 /// Represents a publisher handle for a resource path.
 class ZenohPublisher {
-  ZenohPublisher(this.pointer);
+  ZenohPublisher(this.pointer, {this.webHandle});
 
-  final ffi.Pointer<gen.z_owned_publisher_t> pointer;
+  final ffi.Pointer<gen.z_owned_publisher_t>? pointer;
+  // Using dynamic for web JSObject to avoid conditional imports
+  final dynamic webHandle;
 
-  int get handle => pointer.address;
+  int get handle => pointer?.address ?? 0;
 }

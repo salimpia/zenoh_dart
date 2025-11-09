@@ -1,9 +1,9 @@
 name: zenoh_dart
 version: 0.1.0-dev.0
 description: Dart and Flutter FFI bindings for the Eclipse Zenoh middleware.
-homepage: https://github.com/M-PIA/zenoh_dart
-repository: https://github.com/M-PIA/zenoh_dart
-issue_tracker: https://github.com/M-PIA/zenoh_dart/issues
+homepage: https://github.com/salimpia/zenoh_dart
+repository: https://github.com/salimpia/zenoh_dart
+issue_tracker: https://github.com/salimpia/zenoh_dart/issues
 
 environment:
   sdk: ">=3.4.0 <4.0.0"

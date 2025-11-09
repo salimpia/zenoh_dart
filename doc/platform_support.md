@@ -39,4 +39,18 @@ This document outlines how the `zenoh_dart` package prepares native binaries for
 
 ## Web
 
-- Currently unsupported; targeting WebAssembly once upstream Zenoh exposes the necessary interfaces.
+- **Status**: Experimental WASM support via architecture changes.
+- **Implementation**: Uses platform-specific code separation with conditional imports.
+- **Future path**: Will integrate with zenoh-ts (Zenoh's TypeScript/JavaScript bindings) once fully production-ready.
+- **Current state**: 
+  - Platform interface defined (`ZenohClientInterface`)
+  - Native implementation (`ZenohClientNative`) for desktop/mobile
+  - Web stub implementation (`ZenohClientWeb`) ready for zenoh-ts integration
+  - Automatic platform selection at compile time
+- **To use on web** (when zenoh-ts is ready):
+  1. Include zenoh-ts in your HTML: 
+     ```html
+     <script src="https://unpkg.com/@eclipse-zenoh/zenoh-ts@latest/dist/index.js"></script>
+     ```
+  2. The same Dart API will work across all platforms
+  3. Complete the `ZenohClientWeb` implementation with actual JS interop calls
