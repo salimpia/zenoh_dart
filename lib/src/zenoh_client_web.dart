@@ -3,6 +3,8 @@ import 'dart:convert';
 
 import 'zenoh_platform_interface.dart';
 import 'zenoh_types.dart';
+// ignore: unused_import
+import 'zenoh_types_web.dart';
 
 /// Web implementation of Zenoh client using JavaScript interop.
 ///

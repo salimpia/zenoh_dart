@@ -11,6 +11,7 @@ import 'bindings/zenoh_generated.dart' as gen;
 import 'zenoh_exceptions.dart';
 import 'zenoh_platform_interface.dart';
 import 'zenoh_types.dart';
+import 'zenoh_types_native.dart';
 
 /// Native FFI-based implementation of Zenoh client for desktop and mobile platforms.
 class ZenohClientNative implements ZenohClientInterface {
@@ -28,10 +29,10 @@ class ZenohClientNative implements ZenohClientInterface {
   static int _nextSubscriberContextId = 1;
 
   final ZenohBindings _bindings;
-  final ZenohSession session;
+  final ZenohSessionNative session;
 
   bool _closed = false;
-  final Map<int, ZenohSubscriber> _subscribers = {};
+  final Map<int, ZenohSubscriberNative> _subscribers = {};
   final Set<int> _freedSubscriberContexts = {};
 
   @override
@@ -44,7 +45,7 @@ class ZenohClientNative implements ZenohClientInterface {
 
     try {
       _openSession(bindings, sessionPtr, config);
-      return ZenohClientNative._(bindings, ZenohSession(sessionPtr));
+      return ZenohClientNative._(bindings, ZenohSessionNative(sessionPtr));
     } catch (error) {
       pkgffi.calloc.free(sessionPtr);
       rethrow;
@@ -96,7 +97,7 @@ class ZenohClientNative implements ZenohClientInterface {
         pkgffi.calloc.free(keyExprPtr);
       }
 
-      return ZenohPublisher(publisherPtr);
+      return ZenohPublisherNative(publisherPtr);
     } catch (_) {
       pkgffi.calloc.free(publisherPtr);
       rethrow;
@@ -192,7 +193,7 @@ class ZenohClientNative implements ZenohClientInterface {
     pkgffi.calloc.free(optionsPtr);
     pkgffi.calloc.free(closurePtr);
 
-    final subscriber = ZenohSubscriber(
+    final subscriber = ZenohSubscriberNative(
       subscriberPtr,
       stream: controller.stream,
       contextId: contextId,
@@ -207,10 +208,8 @@ class ZenohClientNative implements ZenohClientInterface {
       throw ArgumentError.value(payload, 'payload', 'must not be empty');
     }
 
-    final ptr = publisher.pointer;
-    if (ptr == null) {
-      throw StateError('Invalid publisher pointer');
-    }
+    final nativePublisher = publisher as ZenohPublisherNative;
+    final ptr = nativePublisher.pointer;
 
     final dataPtr = pkgffi.calloc<ffi.Uint8>(payload.length);
     final bytesPtr = pkgffi.calloc<gen.z_owned_bytes_t>();
@@ -270,10 +269,8 @@ class ZenohClientNative implements ZenohClientInterface {
 
   @override
   Future<void> undeclarePublisher(ZenohPublisher publisher) async {
-    final ptr = publisher.pointer;
-    if (ptr == null) {
-      throw StateError('Invalid publisher pointer');
-    }
+    final nativePublisher = publisher as ZenohPublisherNative;
+    final ptr = nativePublisher.pointer;
     final movedPtr = ptr.cast<gen.z_moved_publisher_t>();
     _bindings.zPublisherDrop(movedPtr);
     pkgffi.calloc.free(ptr);
@@ -292,10 +289,8 @@ class ZenohClientNative implements ZenohClientInterface {
       _subscribers.remove(subscriber.contextId);
     }
 
-    final ptr = subscriber.pointer;
-    if (ptr == null) {
-      throw StateError('Invalid subscriber pointer');
-    }
+    final nativeSubscriber = subscriber as ZenohSubscriberNative;
+    final ptr = nativeSubscriber.pointer;
     final movedPtr = ptr.cast<gen.z_moved_subscriber_t>();
     _bindings.zSubscriberDrop(movedPtr);
 

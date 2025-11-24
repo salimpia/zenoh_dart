@@ -1,9 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ffi' as ffi;
 import 'dart:typed_data';
-
-import 'bindings/zenoh_generated.dart' as gen;
 
 /// Defines core data types for the Zenoh Dart bindings.
 class ZenohConfig {
@@ -32,12 +29,10 @@ enum ZenohMode {
 }
 
 /// Represents a handle to a Zenoh session.
-class ZenohSession {
-  ZenohSession(this.pointer);
-
-  final ffi.Pointer<gen.z_owned_session_t> pointer;
-
-  int get handle => pointer.address;
+/// Platform-specific implementations extend this class.
+abstract class ZenohSession {
+  /// Returns a numeric handle for the session (platform-specific).
+  int get handle;
 }
 
 /// Represents a sample delivered to subscribers.
@@ -52,30 +47,23 @@ class ZenohSample {
 }
 
 /// Represents a subscription to a specific resource path.
-class ZenohSubscriber {
-  ZenohSubscriber(
-    this.pointer, {
+/// Platform-specific implementations extend this class.
+abstract class ZenohSubscriber {
+  ZenohSubscriber({
     required this.stream,
     required this.contextId,
-    this.webHandle,
   });
 
-  final ffi.Pointer<gen.z_owned_subscriber_t>? pointer;
   final Stream<ZenohSample> stream;
   final int contextId;
-  // Using dynamic for web JSObject to avoid conditional imports
-  final dynamic webHandle;
 
-  int get handle => pointer?.address ?? 0;
+  /// Returns a numeric handle for the subscriber (platform-specific).
+  int get handle;
 }
 
 /// Represents a publisher handle for a resource path.
-class ZenohPublisher {
-  ZenohPublisher(this.pointer, {this.webHandle});
-
-  final ffi.Pointer<gen.z_owned_publisher_t>? pointer;
-  // Using dynamic for web JSObject to avoid conditional imports
-  final dynamic webHandle;
-
-  int get handle => pointer?.address ?? 0;
+/// Platform-specific implementations extend this class.
+abstract class ZenohPublisher {
+  /// Returns a numeric handle for the publisher (platform-specific).
+  int get handle;
 }
