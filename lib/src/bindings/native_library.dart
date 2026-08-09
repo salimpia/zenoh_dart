@@ -25,14 +25,24 @@ class NativeLibrary {
   }
 
   Future<DynamicLibrary> _loadDynamicLibrary() async {
-    final name = _libraryFileName();
-    final bundledPath = await _resolveBundledLibraryPath(name);
-    if (bundledPath != null) {
-      return DynamicLibrary.open(bundledPath.path);
+    final names = _libraryFileNames();
+    for (final name in names) {
+      final bundledPath = await _resolveBundledLibraryPath(name);
+      if (bundledPath != null) {
+        return DynamicLibrary.open(bundledPath.path);
+      }
     }
 
     // Fallback to process-wide lookup (useful for development and desktop).
-    return DynamicLibrary.open(name);
+    for (final name in names) {
+      try {
+        return DynamicLibrary.open(name);
+      } catch (_) {
+        // Try next candidate
+      }
+    }
+
+    return DynamicLibrary.open(names.first);
   }
 
   Future<File?> _resolveBundledLibraryPath(String libraryName) async {
@@ -136,16 +146,28 @@ class NativeLibrary {
     final base = Directory('${root.path}/native/$platformDir/$arch');
     if (base.existsSync()) {
       yield base;
+      final libDir = Directory('${base.path}/lib');
+      if (libDir.existsSync()) {
+        yield libDir;
+      }
     }
 
     if (Platform.isWindows) {
       final msvc = Directory('${base.path}/msvc');
       if (msvc.existsSync()) {
         yield msvc;
+        final msvcLib = Directory('${msvc.path}/lib');
+        if (msvcLib.existsSync()) {
+          yield msvcLib;
+        }
       }
       final gnu = Directory('${base.path}/gnu');
       if (gnu.existsSync()) {
         yield gnu;
+        final gnuLib = Directory('${gnu.path}/lib');
+        if (gnuLib.existsSync()) {
+          yield gnuLib;
+        }
       }
     }
   }
@@ -218,18 +240,15 @@ class NativeLibrary {
     return null;
   }
 
-  String _libraryFileName() {
-    if (Platform.isMacOS) {
-      return 'libzenoh.dylib';
-    }
-    if (Platform.isIOS) {
-      return 'libzenoh.dylib';
+  List<String> _libraryFileNames() {
+    if (Platform.isMacOS || Platform.isIOS) {
+      return ['libzenohc.dylib', 'libzenoh.dylib'];
     }
     if (Platform.isWindows) {
-      return 'zenoh.dll';
+      return ['zenoh.dll', 'zenohc.dll', 'libzenohc.dll', 'libzenoh.dll'];
     }
     if (Platform.isAndroid || Platform.isLinux) {
-      return 'libzenoh.so';
+      return ['libzenohc.so', 'libzenoh.so'];
     }
     throw UnsupportedError(
         'Zenoh native bindings are not supported on this platform yet.');
