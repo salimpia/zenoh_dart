@@ -43,13 +43,18 @@ class ZenohClientWeb implements ZenohClientInterface {
   Future<void> publishString(
     ZenohPublisher publisher,
     String data, {
+    List<int>? attachment,
     Encoding encoding = utf8,
   }) async {
     throw UnimplementedError('Web platform not yet implemented');
   }
 
   @override
-  Future<void> publishBytes(ZenohPublisher publisher, List<int> data) async {
+  Future<void> publishBytes(
+    ZenohPublisher publisher,
+    List<int> data, {
+    List<int>? attachment,
+  }) async {
     throw UnimplementedError('Web platform not yet implemented');
   }
 

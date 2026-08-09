@@ -43,12 +43,20 @@ class ZenohClient implements ZenohClientInterface {
   Future<ZenohSubscriber> subscribe(String keyExpr) => _impl.subscribe(keyExpr);
 
   @override
-  Future<void> publishString(ZenohPublisher publisher, String data) =>
-      _impl.publishString(publisher, data);
+  Future<void> publishString(
+    ZenohPublisher publisher,
+    String data, {
+    List<int>? attachment,
+  }) =>
+      _impl.publishString(publisher, data, attachment: attachment);
 
   @override
-  Future<void> publishBytes(ZenohPublisher publisher, List<int> data) =>
-      _impl.publishBytes(publisher, data);
+  Future<void> publishBytes(
+    ZenohPublisher publisher,
+    List<int> data, {
+    List<int>? attachment,
+  }) =>
+      _impl.publishBytes(publisher, data, attachment: attachment);
 
   @override
   Future<void> undeclarePublisher(ZenohPublisher publisher) =>

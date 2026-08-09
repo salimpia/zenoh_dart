@@ -203,7 +203,11 @@ class ZenohClientNative implements ZenohClientInterface {
   }
 
   /// Publishes raw bytes using a previously declared publisher handle.
-  Future<void> publish(ZenohPublisher publisher, List<int> payload) async {
+  Future<void> publish(
+    ZenohPublisher publisher,
+    List<int> payload, {
+    List<int>? attachment,
+  }) async {
     if (payload.isEmpty) {
       throw ArgumentError.value(payload, 'payload', 'must not be empty');
     }
@@ -213,6 +217,10 @@ class ZenohClientNative implements ZenohClientInterface {
 
     final dataPtr = pkgffi.calloc<ffi.Uint8>(payload.length);
     final bytesPtr = pkgffi.calloc<gen.z_owned_bytes_t>();
+
+    ffi.Pointer<ffi.Uint8>? attachDataPtr;
+    ffi.Pointer<gen.z_owned_bytes_t>? attachBytesPtr;
+    ffi.Pointer<gen.z_moved_bytes_t>? movedAttachPtr;
 
     try {
       dataPtr.asTypedList(payload.length).setAll(0, payload);
@@ -228,20 +236,54 @@ class ZenohClientNative implements ZenohClientInterface {
           errorCode: copyRc,
         );
       }
+
+      if (attachment != null && attachment.isNotEmpty) {
+        attachDataPtr = pkgffi.calloc<ffi.Uint8>(attachment.length);
+        attachBytesPtr = pkgffi.calloc<gen.z_owned_bytes_t>();
+        attachDataPtr.asTypedList(attachment.length).setAll(0, attachment);
+        final copyAttachRc = _bindings.zBytesCopyFromBuf(
+          attachBytesPtr,
+          attachDataPtr,
+          attachment.length,
+        );
+        if (copyAttachRc != 0) {
+          throw ZenohNativeCallException(
+            'z_bytes_copy_from_buf failed for attachment',
+            errorCode: copyAttachRc,
+          );
+        }
+        movedAttachPtr = attachBytesPtr.cast<gen.z_moved_bytes_t>();
+      }
     } finally {
       pkgffi.calloc.free(dataPtr);
+      if (attachDataPtr != null) {
+        pkgffi.calloc.free(attachDataPtr);
+      }
     }
 
     final movedBytesPtr = bytesPtr.cast<gen.z_moved_bytes_t>();
 
-    final optionsPtr = pkgffi.calloc<gen.z_publisher_put_options_t>();
-    _bindings.zPublisherPutOptionsDefault(optionsPtr);
+    final optionsPtr = pkgffi.calloc<ffi.Pointer<ffi.Void>>(4);
+    _bindings.zPublisherPutOptionsDefault(
+      optionsPtr.cast<gen.z_publisher_put_options_t>(),
+    );
+
+    if (movedAttachPtr != null) {
+      // Offset 24 (index 3) is attachment pointer in 64-bit z_publisher_put_options_t
+      optionsPtr[3] = movedAttachPtr.cast<ffi.Void>();
+    }
 
     final publisherLoan = _bindings.zPublisherLoan(ptr);
-    final rc =
-        _bindings.zPublisherPut(publisherLoan, movedBytesPtr, optionsPtr);
+    final rc = _bindings.zPublisherPut(
+      publisherLoan,
+      movedBytesPtr,
+      optionsPtr.cast<gen.z_publisher_put_options_t>(),
+    );
 
     pkgffi.calloc.free(optionsPtr);
+    if (attachBytesPtr != null) {
+      pkgffi.calloc.free(attachBytesPtr);
+    }
 
     if (rc != 0) {
       _bindings.zBytesDrop(movedBytesPtr);
@@ -256,15 +298,20 @@ class ZenohClientNative implements ZenohClientInterface {
   Future<void> publishString(
     ZenohPublisher publisher,
     String message, {
+    List<int>? attachment,
     Encoding encoding = utf8,
   }) async {
     final data = encoding.encode(message);
-    await publish(publisher, data);
+    await publish(publisher, data, attachment: attachment);
   }
 
   @override
-  Future<void> publishBytes(ZenohPublisher publisher, List<int> data) async {
-    await publish(publisher, data);
+  Future<void> publishBytes(
+    ZenohPublisher publisher,
+    List<int> data, {
+    List<int>? attachment,
+  }) async {
+    await publish(publisher, data, attachment: attachment);
   }
 
   @override
@@ -384,7 +431,14 @@ class ZenohClientNative implements ZenohClientInterface {
     final keyExpr = _readKeyExpr(keyExprLoan);
     final payloadLoan = _bindings.zSamplePayload(samplePtr);
     final payload = _readPayload(payloadLoan);
-    return ZenohSample(keyExpr: keyExpr, payload: payload);
+    final attachLoan = _bindings.zSampleAttachment(samplePtr);
+    final Uint8List? attachment =
+        attachLoan.address != 0 ? _readPayload(attachLoan) : null;
+    return ZenohSample(
+      keyExpr: keyExpr,
+      payload: payload,
+      attachment: attachment,
+    );
   }
 
   String _readKeyExpr(ffi.Pointer<gen.z_loaned_keyexpr_t> keyExprLoan) {

@@ -181,6 +181,11 @@ class ZenohBindings {
   ) =>
       _native.z_sample_payload(sample);
 
+  ffi.Pointer<gen.z_loaned_bytes_t> zSampleAttachment(
+    ffi.Pointer<gen.z_loaned_sample_t> sample,
+  ) =>
+      _native.z_sample_attachment(sample);
+
   ffi.Pointer<gen.z_loaned_keyexpr_t> zSampleKeyExpr(
     ffi.Pointer<gen.z_loaned_sample_t> sample,
   ) =>

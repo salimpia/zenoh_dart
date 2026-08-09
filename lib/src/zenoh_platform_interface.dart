@@ -21,10 +21,18 @@ abstract class ZenohClientInterface {
   Future<ZenohSubscriber> subscribe(String keyExpr);
 
   /// Publishes string data to the specified publisher.
-  Future<void> publishString(ZenohPublisher publisher, String data);
+  Future<void> publishString(
+    ZenohPublisher publisher,
+    String data, {
+    List<int>? attachment,
+  });
 
   /// Publishes binary data to the specified publisher.
-  Future<void> publishBytes(ZenohPublisher publisher, List<int> data);
+  Future<void> publishBytes(
+    ZenohPublisher publisher,
+    List<int> data, {
+    List<int>? attachment,
+  });
 
   /// Removes a publisher and releases its resources.
   Future<void> undeclarePublisher(ZenohPublisher publisher);

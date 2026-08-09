@@ -37,10 +37,15 @@ abstract class ZenohSession {
 
 /// Represents a sample delivered to subscribers.
 class ZenohSample {
-  const ZenohSample({required this.keyExpr, required this.payload});
+  const ZenohSample({
+    required this.keyExpr,
+    required this.payload,
+    this.attachment,
+  });
 
   final String keyExpr;
   final Uint8List payload;
+  final Uint8List? attachment;
 
   String payloadAsString({Encoding encoding = utf8}) =>
       encoding.decode(payload);
