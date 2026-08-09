@@ -241,4 +241,36 @@ class ZenohBindings {
     ffi.Pointer<gen.z_moved_closure_sample_t> closure,
   ) =>
       _native.z_closure_sample_drop(closure);
+
+  // --- FIFO Sample Channel ---------------------------------------------------
+  void zFifoChannelSampleNew(
+    ffi.Pointer<gen.z_owned_closure_sample_t> callback,
+    ffi.Pointer<gen.z_owned_fifo_handler_sample_t> handler,
+    int capacity,
+  ) =>
+      _native.z_fifo_channel_sample_new(callback, handler, capacity);
+
+  void zFifoHandlerSampleDrop(
+    ffi.Pointer<gen.z_moved_fifo_handler_sample_t> handler,
+  ) =>
+      _native.z_fifo_handler_sample_drop(handler);
+
+  ffi.Pointer<gen.z_loaned_fifo_handler_sample_t> zFifoHandlerSampleLoan(
+    ffi.Pointer<gen.z_owned_fifo_handler_sample_t> handler,
+  ) =>
+      _native.z_fifo_handler_sample_loan(handler);
+
+  int zFifoHandlerSampleTryRecv(
+    ffi.Pointer<gen.z_loaned_fifo_handler_sample_t> handler,
+    ffi.Pointer<gen.z_owned_sample_t> sample,
+  ) =>
+      _native.z_fifo_handler_sample_try_recv(handler, sample);
+
+  ffi.Pointer<gen.z_loaned_sample_t> zSampleLoan(
+    ffi.Pointer<gen.z_owned_sample_t> sample,
+  ) =>
+      _native.z_sample_loan(sample);
+
+  void zSampleDrop(ffi.Pointer<gen.z_moved_sample_t> sample) =>
+      _native.z_sample_drop(sample);
 }

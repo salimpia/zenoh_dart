@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:isolate';
@@ -114,14 +115,38 @@ class NativeLibrary {
     try {
       final packageUri = await Isolate.resolvePackageUri(
           Uri.parse('package:zenoh_dart/zenoh_dart.dart'));
-      if (packageUri == null || packageUri.scheme != 'file') {
-        return null;
+      if (packageUri != null && packageUri.scheme == 'file') {
+        final libDir = File.fromUri(packageUri).parent;
+        return libDir.parent;
       }
-      final libDir = File.fromUri(packageUri).parent;
-      return libDir.parent;
-    } catch (_) {
-      return null;
-    }
+    } catch (_) {}
+
+    try {
+      final packageConfigFile = File('.dart_tool/package_config.json');
+      if (packageConfigFile.existsSync()) {
+        final content = jsonDecode(packageConfigFile.readAsStringSync())
+            as Map<String, dynamic>;
+        final packages = content['packages'] as List<dynamic>?;
+        if (packages != null) {
+          for (final pkg in packages) {
+            if (pkg['name'] == 'zenoh_dart') {
+              final rootUriStr = pkg['rootUri'] as String?;
+              if (rootUriStr != null) {
+                final uri = Uri.parse(rootUriStr);
+                if (uri.scheme == 'file') {
+                  return Directory.fromUri(uri);
+                } else {
+                  return Directory.fromUri(
+                      packageConfigFile.parent.uri.resolve(rootUriStr));
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (_) {}
+
+    return null;
   }
 
   Iterable<Directory> _nativeAssetDirectories(Directory root) sync* {

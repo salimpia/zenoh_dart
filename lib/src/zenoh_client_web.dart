@@ -76,3 +76,5 @@ class ZenohClientWeb implements ZenohClientInterface {
     _closed = true;
   }
 }
+
+typedef ZenohClientNative = ZenohClientWeb;

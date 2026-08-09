@@ -17,14 +17,6 @@ import 'zenoh_types_native.dart';
 class ZenohClientNative implements ZenohClientInterface {
   ZenohClientNative._(this._bindings, this.session);
 
-  static final ffi.Pointer<ffi.NativeFunction<ZenohSampleCallbackNative>>
-      _sampleCallbackPtr =
-      ffi.Pointer.fromFunction<ZenohSampleCallbackNative>(_onSampleNative);
-
-  static final ffi.Pointer<ffi.NativeFunction<ZenohDropCallbackNative>>
-      _sampleDropPtr =
-      ffi.Pointer.fromFunction<ZenohDropCallbackNative>(_onSampleDropNative);
-
   static final Map<int, _SubscriberContext> _subscriberContexts = {};
   static int _nextSubscriberContextId = 1;
 
@@ -111,19 +103,22 @@ class ZenohClientNative implements ZenohClientInterface {
     }
 
     final subscriberPtr = pkgffi.calloc<gen.z_owned_subscriber_t>();
-    final controller = StreamController<ZenohSample>();
-    final contextId = _registerSubscriberContext(controller, subscriberPtr);
-    final contextPtr = ffi.Pointer<ffi.Void>.fromAddress(contextId);
+    final closurePtr = pkgffi.calloc<gen.z_owned_closure_sample_t>();
+    final handlerPtr = pkgffi.calloc<gen.z_owned_fifo_handler_sample_t>();
+
+    final controller = StreamController<ZenohSample>.broadcast();
+    final contextId = _registerSubscriberContext(
+      controller,
+      subscriberPtr,
+      handlerPtr,
+    );
 
     final keyExprPtr = pkgffi.calloc<gen.z_owned_keyexpr_t>();
     final keyExprUtf8 = keyExpr.toNativeUtf8(allocator: pkgffi.calloc);
     final optionsPtr = pkgffi.calloc<gen.z_subscriber_options_t>();
-    final closurePtr = pkgffi.calloc<gen.z_owned_closure_sample_t>();
 
     var keyExprInitialized = false;
     var keyExprDropped = false;
-    var closureInitialized = false;
-    var closureDropped = false;
 
     try {
       final keyRc = _bindings.zKeyExprFromStr(
@@ -139,17 +134,9 @@ class ZenohClientNative implements ZenohClientInterface {
       keyExprInitialized = true;
 
       _bindings.zSubscriberOptionsDefault(optionsPtr);
-
-      _bindings.zClosureSample(
-        closurePtr,
-        _sampleCallbackPtr,
-        _sampleDropPtr,
-        contextPtr,
-      );
-      closureInitialized = true;
+      _bindings.zFifoChannelSampleNew(closurePtr, handlerPtr, 256);
 
       final movedClosurePtr = closurePtr.cast<gen.z_moved_closure_sample_t>();
-
       final sessionLoan = _bindings.zSessionLoan(session.pointer);
       final keyLoan = _bindings.zKeyExprLoan(keyExprPtr);
       final rc = _bindings.zDeclareSubscriber(
@@ -164,8 +151,6 @@ class ZenohClientNative implements ZenohClientInterface {
       keyExprDropped = true;
 
       if (rc != 0) {
-        _bindings.zClosureSampleDrop(movedClosurePtr);
-        closureDropped = true;
         throw ZenohNativeCallException(
           'z_declare_subscriber failed',
           errorCode: rc,
@@ -175,12 +160,8 @@ class ZenohClientNative implements ZenohClientInterface {
       if (keyExprInitialized && !keyExprDropped) {
         _dropKeyExpr(keyExprPtr);
       }
-      if (closureInitialized && !closureDropped) {
-        final movedClosurePtr = closurePtr.cast<gen.z_moved_closure_sample_t>();
-        _bindings.zClosureSampleDrop(movedClosurePtr);
-      }
 
-      await _cleanupSubscriberFailure(contextId, subscriberPtr);
+      await _cleanupSubscriberFailure(contextId, subscriberPtr, handlerPtr);
       pkgffi.calloc.free(keyExprUtf8);
       pkgffi.calloc.free(keyExprPtr);
       pkgffi.calloc.free(optionsPtr);
@@ -379,6 +360,7 @@ class ZenohClientNative implements ZenohClientInterface {
   Future<void> _cleanupSubscriberFailure(
     int contextId,
     ffi.Pointer<gen.z_owned_subscriber_t> subscriberPtr,
+    ffi.Pointer<gen.z_owned_fifo_handler_sample_t> handlerPtr,
   ) async {
     final context = _subscriberContexts.remove(contextId);
     if (context != null) {
@@ -419,10 +401,11 @@ class ZenohClientNative implements ZenohClientInterface {
   int _registerSubscriberContext(
     StreamController<ZenohSample> controller,
     ffi.Pointer<gen.z_owned_subscriber_t> subscriberPtr,
+    ffi.Pointer<gen.z_owned_fifo_handler_sample_t> handlerPtr,
   ) {
     final id = _nextSubscriberContextId++;
     _subscriberContexts[id] =
-        _SubscriberContext(this, controller, subscriberPtr);
+        _SubscriberContext(this, controller, subscriberPtr, handlerPtr);
     return id;
   }
 
@@ -485,35 +468,6 @@ class ZenohClientNative implements ZenohClientInterface {
     }
   }
 
-  static void _onSampleNative(
-    ffi.Pointer<gen.z_loaned_sample_t> samplePtr,
-    ffi.Pointer<ffi.Void> contextPtr,
-  ) {
-    final context = _subscriberContexts[contextPtr.address];
-    if (context == null) {
-      return;
-    }
-
-    try {
-      final sample = context.client._readSample(samplePtr);
-      context.controller.add(sample);
-    } catch (error, stackTrace) {
-      context.controller.addError(error, stackTrace);
-    }
-  }
-
-  static void _onSampleDropNative(ffi.Pointer<ffi.Void> contextPtr) {
-    final id = contextPtr.address;
-    final context = _subscriberContexts.remove(id);
-    if (context == null) {
-      return;
-    }
-
-    unawaited(
-      context.client._handleSubscriberDrop(id, context, freeHandle: true),
-    );
-  }
-
   static void _openSession(
     ZenohBindings bindings,
     ffi.Pointer<gen.z_owned_session_t> sessionPtr,
@@ -571,15 +525,77 @@ class ZenohClientNative implements ZenohClientInterface {
 }
 
 class _SubscriberContext {
-  _SubscriberContext(this.client, this.controller, this.pointer);
+  _SubscriberContext(this.client, this.controller, this.pointer, this.handlerPtr) {
+    _startPolling();
+  }
 
   final ZenohClientNative client;
   final StreamController<ZenohSample> controller;
   ffi.Pointer<gen.z_owned_subscriber_t>? pointer;
+  ffi.Pointer<gen.z_owned_fifo_handler_sample_t>? handlerPtr;
 
+  Timer? _pollingTimer;
   Future<void>? _closeFuture;
+  bool _isPolling = false;
 
-  Future<void> close() {
-    return _closeFuture ??= controller.close();
+  void _startPolling() {
+    _pollingTimer = Timer.periodic(const Duration(milliseconds: 2), (_) {
+      _pollSamples();
+    });
+  }
+
+  void _pollSamples() {
+    final hPtr = handlerPtr;
+    if (hPtr == null || _isPolling) return;
+    _isPolling = true;
+
+    try {
+      final handlerLoan = client._bindings.zFifoHandlerSampleLoan(hPtr);
+      final ownedSamplePtr = pkgffi.calloc<gen.z_owned_sample_t>();
+      try {
+        while (true) {
+          final rc =
+              client._bindings.zFifoHandlerSampleTryRecv(handlerLoan, ownedSamplePtr);
+          if (rc != 0) {
+            break;
+          }
+          final loanedSample = client._bindings.zSampleLoan(ownedSamplePtr);
+          try {
+            final sample = client._readSample(loanedSample);
+            if (!controller.isClosed) {
+              controller.add(sample);
+            }
+          } finally {
+            client._bindings
+                .zSampleDrop(ownedSamplePtr.cast<gen.z_moved_sample_t>());
+          }
+        }
+      } finally {
+        pkgffi.calloc.free(ownedSamplePtr);
+      }
+    } catch (e, st) {
+      if (!controller.isClosed) {
+        controller.addError(e, st);
+      }
+    } finally {
+      _isPolling = false;
+    }
+  }
+
+  Future<void> close() async {
+    if (_closeFuture != null) return _closeFuture!;
+    _pollingTimer?.cancel();
+    _pollingTimer = null;
+    _pollSamples();
+
+    final hPtr = handlerPtr;
+    if (hPtr != null) {
+      handlerPtr = null;
+      client._bindings.zFifoHandlerSampleDrop(
+          hPtr.cast<gen.z_moved_fifo_handler_sample_t>());
+      pkgffi.calloc.free(hPtr);
+    }
+
+    return _closeFuture = controller.close();
   }
 }
