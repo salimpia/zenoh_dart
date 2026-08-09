@@ -42,10 +42,9 @@ class Ros2Cdr {
     // Skip 4-byte header and 4-byte length prefix
     final strBytes = payload.sublist(8);
     // Remove trailing null terminator if present
-    final cleanBytes =
-        strBytes.isNotEmpty && strBytes.last == 0
-            ? strBytes.sublist(0, strBytes.length - 1)
-            : strBytes;
+    final cleanBytes = strBytes.isNotEmpty && strBytes.last == 0
+        ? strBytes.sublist(0, strBytes.length - 1)
+        : strBytes;
     return utf8.decode(cleanBytes, allowMalformed: true);
   }
 
@@ -110,8 +109,22 @@ class RmwZenoh {
 
   /// Default publisher GID (16 bytes)
   static const List<int> defaultGid = [
-    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-    0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+    0x01,
+    0x02,
+    0x03,
+    0x04,
+    0x05,
+    0x06,
+    0x07,
+    0x08,
+    0x11,
+    0x12,
+    0x13,
+    0x14,
+    0x15,
+    0x16,
+    0x17,
+    0x18,
   ];
 
   /// Creates a standard `rmw_zenoh_cpp` binary attachment (33 bytes).
@@ -159,10 +172,9 @@ class RmwZenoh {
     final sequenceNumber = byteData.getInt64(0, Endian.little);
     final sourceTimestampNs = byteData.getInt64(8, Endian.little);
     final gidLen = attachment[16];
-    final gid =
-        attachment.length >= 17 + gidLen
-            ? attachment.sublist(17, 17 + gidLen)
-            : attachment.sublist(17);
+    final gid = attachment.length >= 17 + gidLen
+        ? attachment.sublist(17, 17 + gidLen)
+        : attachment.sublist(17);
 
     return (
       sequenceNumber: sequenceNumber,
